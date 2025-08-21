@@ -1,0 +1,60 @@
+import streamlit as st
+import feedparser
+from newspaper import Article
+from datetime import datetime
+from docx import Document
+
+st.set_page_config(page_title="CI Alerts Generator", layout="wide")
+
+st.title("📢 Competitive Intelligence (CI) Alerts Generator")
+
+# Input link
+url = st.text_input("Paste a news article link:")
+
+if url:
+    try:
+        article = Article(url)
+        article.download()
+        article.parse()
+
+        # Prepare output
+        date_today = datetime.today().strftime("%B %d, %Y")
+        title = article.title
+        summary = article.text[:600] + "..."  # Short summary
+
+        alert_text = f"""
+Competitive Intelligence (CI) Alert – {title}
+📅 Date: {date_today}
+📍 Geography: Global (auto-generated)
+🎯 Area: Oncology / Pharma
+
+🚨 Headline
+{title}
+
+🔑 Key Takeaways
+{summary}
+
+🌍 Market & Competitive Implications
+Potential impact on competitive landscape, trial pipelines, and market access strategies.
+
+📌 CI Watchpoints
+• Monitor competitor responses  
+• Track regulatory updates  
+• Follow pricing/reimbursement trends  
+
+🔗 Link: {url}
+"""
+
+        st.subheader("Generated CI Alert")
+        st.write(alert_text)
+
+        # Option to download as Word
+        doc = Document()
+        doc.add_paragraph(alert_text)
+        doc.save("ci_alert.docx")
+
+        with open("ci_alert.docx", "rb") as f:
+            st.download_button("⬇️ Download Word File", f, file_name="ci_alert.docx")
+
+    except Exception as e:
+        st.error(f"Error processing link: {e}")
